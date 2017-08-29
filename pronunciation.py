@@ -38,7 +38,8 @@ class Pronounce(object):
         punc_map = dict((ord(c), None) for c in string.punctuation)
         w_nopunc = [s.translate(punc_map) for s in w_upper]
 
-        file = {'corpus': ('words.txt', " ".join(w_nopunc))}
+        file = {'corpus': ('words.txt', "the word is " + " ".join(w_nopunc))}
+        
 
         res = requests.post(Pronounce.url,
                             data={"formtype": "simple"},
@@ -48,6 +49,8 @@ class Pronounce(object):
         dict_path = Pronounce.dict_re.search(text).group(0)
         res = requests.get(base_url + dict_path)
         
+        print res.text
+        
         # generate output dict
         pronunciations = {}
         for line in res.text.split('\n'):
@@ -56,7 +59,12 @@ class Pronounce(object):
                 match = Pronounce.other_pr.match(pr[0])
                 if match:
                     pr[0] = match.group(1)
-                idx = w_nopunc.index(pr[0])
+                
+                try:
+                    idx = w_nopunc.index(pr[0])
+                except:
+                    print 'mismatched', pr[0]
+                    continue
                 orig = self.words[idx]
                 upword = w_upper[idx]
                 
